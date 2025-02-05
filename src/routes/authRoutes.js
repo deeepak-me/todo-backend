@@ -5,27 +5,25 @@ import db from "../db.js";
 
 const router = express.Router();
 
+// Register a new user endpoint /auth/register
 router.post("/register", (req, res) => {
   const { username, password } = req.body;
+
   const hashedPassword = bcrypt.hashSync(password, 8);
 
   // save new user and password to the db
   try {
-    const insertUser = db.prepare(
-      `INSERT INTO users (username,password) VALUES(?, ?)`
-    );
+    const insertUser = db.prepare(`INSERT INTO users (username,password)
+        VALUES(?, ?)`);
     const result = insertUser.run(username, hashedPassword);
 
-    // now we have the first user, I want  to add their first todo to them
-
-    const defaultTodo = `Hello! Add your first todo`;
-    const insertTodo = db.prepare(
-      `INSERT INTO todos (user_id,task) VALUES(?, ?)`
-    );
+    //now that we have a user, I want to add their first todo them
+    const defaultTodo = `Hello! Add your first todo!`;
+    const insertTodo = db.prepare(`INSERT INTO todos (user_id,task)
+        VALUES(?, ?)`);
     insertTodo.run(result.lastInsertRowid, defaultTodo);
 
-    //create token
-
+    //create a token
     const token = jwt.sign(
       { id: result.lastInsertRowid },
       process.env.JWT_SECRET,
